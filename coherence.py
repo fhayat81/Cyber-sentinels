@@ -12,7 +12,7 @@ def keyword_cs(text):
     # Example text
     #text = """"""
     # Process the text
-    print("Starting Coherence check\n")
+    print("Starting Coherence check...")
     doc = nlp(text)
 
     # Extract named entities
@@ -55,7 +55,7 @@ def paragraph_cs(paragraph):
     #paragraph = paragraph.replace('\n','  ')  # Clean up newlines
 
     # Step 1: Split paragraph into sentences
-    print("Starting paragraph check\n")
+    print("Starting paragraph check...")
     sentences = paragraph.split(".\n")
     for i in range(len(sentences)):
         sentences[i] = sentences[i].replace('\n',' ')

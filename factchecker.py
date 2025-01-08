@@ -9,7 +9,7 @@ os.environ["GROQ_API_KEY"] = "gsk_LqU4d8IxGAOgc6jIDESyWGdyb3FYYhCENq82sPcPIyyLno
 model1 = ChatGroq(model="llama3-8b-8192")
 
 def fact_check(text):
-    print("Starting Fact check\n")
+    print("Starting Fact check...")
     claims = text.split('.')
     claims = list(filter(lambda x: x != "", claims))
 
