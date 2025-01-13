@@ -1,36 +1,30 @@
 from PyPDF2 import PdfReader
 from factchecker import fact_check
 from grammercheck import grammar, check_sentence
-from coherence import keyword_cs, paragraph_cs
+from coherence import keyword_cs, paragraph_cs, topicCheck
+from logistic import regress
 import csv
 import os
 
 filepath = "pdfs/"
 
-def create_csv(pathway, filename, fact, key, para, gr):
+def update_sample_data(pathway, filename, fact, key, para, gr, answer):
     # Step 1: Create a CSV file at the given path
-    with open(pathway, mode='w', newline='', encoding='utf-8') as file:
+    with open(pathway, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         # Writing the header and some rows
-        writer.writerow([filename, fact, key, para, gr])
+        writer.writerow([filename, fact, key, para, gr, answer])
 
-    print(f"CSV file created at: {pathway}")
+    print(f"sample_data.csv file updated")
 
+def update_results(pathway, filename, answer, topic):
+    # Step 1: Create a CSV file at the given path
+    with open(pathway, mode='a', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        # Writing the header and some rows
+        writer.writerow([filename, answer, topic])
 
-def parse_csv(pathway):
-    # Step 2: Parse the CSV file at the given path
-    if not os.path.exists(pathway):
-        print(f"Error: {pathway} does not exist.")
-        return
-
-    with open(pathway, mode='r', encoding='utf-8') as file:
-        reader = csv.reader(file)
-
-        # Reading and printing data row by row
-        parsed_data = [row for row in reader]
-        print("\nParsed CSV Data:")
-        for row in parsed_data:
-            print(row)
+    print(f"Result of {filename} added to results.csv")
 
 for filename in os.listdir(filepath):
     name = "pdfs/"+filename
@@ -46,16 +40,23 @@ for filename in os.listdir(filepath):
     key = keyword_cs(text)
     para = paragraph_cs(paragraph)
     gr = check_sentence(text)
+    answer = regress(fact, key, para, gr)
+    if answer==1:
+        topic = topicCheck(text)
+    else:
+        topic = "NA"
+    
+    
     
     if __name__ == "__main__":
         # Set the pathway to the desired location for your CSV
         pathway = "data/sample_data.csv"
+        path_result_csv = "data/results.csv"
 
         # Ensure the directory exists
         os.makedirs(os.path.dirname(pathway), exist_ok=True)
 
         # Create and save CSV file
-        create_csv(pathway, filename, fact, key, para, gr)
-
-        # Parse and print the CSV data
-        parse_csv(pathway)
+        update_sample_data(pathway, filename, fact, key, para, gr, answer)
+        update_results(path_result_csv, filename, answer, topic)
+        

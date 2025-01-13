@@ -2,6 +2,8 @@ from transformers import T5TokenizerFast, T5Model
 from torch.nn.functional import cosine_similarity
 import torch
 import spacy
+import pandas as pd
+import numpy as np
 
 spacy.prefer_gpu()
 
@@ -87,3 +89,66 @@ def paragraph_cs(paragraph):
     return coherence_percentage
     #print(f"Individual Paragraph Similarities: {similarities}")
     
+def topicCheck(text):
+    file_path = "data/Topics_data.xlsx"  # Replace with the correct file path
+    df = pd.read_excel(file_path)
+    data_array = df.iloc[:, 2].values
+
+    keyword_embeddings_list = []
+    for word in data_array:
+        inputs = tokenizer(word, return_tensors="pt", padding=True, truncation=True, max_length=512)
+        with torch.no_grad():
+            outputs = model.encoder(**inputs)
+        keyword_embedding = outputs.last_hidden_state.mean(dim=1)
+        keyword_embeddings_list.append(keyword_embedding)
+    embeddings_tensor = torch.cat(keyword_embeddings_list, dim=0)
+
+    text = text.replace("\n", " ")
+    doc = nlp(text)
+    sentences = [ent.text for ent in doc.ents]
+
+    inputs = tokenizer(sentences, return_tensors="pt", padding=True, truncation=True, max_length=512)
+    with torch.no_grad():
+        outputs = model.encoder(**inputs)
+    sentence_embeddings = outputs.last_hidden_state.mean(dim=1)
+
+    average_sim = [0.0] * 5
+    topics = ["CVPR", "NeurIPS", "EMNLP", "TMLR", "KDD"]
+    similarities = [[] for _ in range(5)]  # Fixed initialization
+
+    for i in range(len(sentences)):
+        for j in range(3, 46):
+            sim = cosine_similarity(sentence_embeddings[i], embeddings_tensor[j], dim=0).item()
+            similarities[0].append(sim)
+    average_sim[0] = sum(similarities[0]) / len(similarities[0]) if similarities[0] else 1.0
+
+    for i in range(len(sentences)):
+        for j in range(47, 84):
+            sim = cosine_similarity(sentence_embeddings[i], embeddings_tensor[j], dim=0).item()
+            similarities[1].append(sim)
+    average_sim[1] = sum(similarities[1]) / len(similarities[1]) if similarities[1] else 1.0
+
+    for i in range(len(sentences)):
+        for j in range(85, 122):
+            sim = cosine_similarity(sentence_embeddings[i], embeddings_tensor[j], dim=0).item()
+            similarities[2].append(sim)
+    average_sim[2] = sum(similarities[2]) / len(similarities[2]) if similarities[2] else 1.0
+
+    for i in range(len(sentences)):
+        for j in range(123, 145):
+            sim = cosine_similarity(sentence_embeddings[i], embeddings_tensor[j], dim=0).item()
+            similarities[3].append(sim)
+    average_sim[3] = sum(similarities[3]) / len(similarities[3]) if similarities[3] else 1.0
+
+    for i in range(len(sentences)):
+        for j in range(146, 177):
+            sim = cosine_similarity(sentence_embeddings[i], embeddings_tensor[j], dim=0).item()
+            similarities[4].append(sim)
+    average_sim[4] = sum(similarities[4]) / len(similarities[4]) if similarities[4] else 1.0
+
+    coherence_percentage = [avg_sim * 100 for avg_sim in average_sim]
+
+    max_index = coherence_percentage.index(max(coherence_percentage))
+    print(f"Most Coherent Topic: {topics[max_index]}")
+    return topics[max_index]
+

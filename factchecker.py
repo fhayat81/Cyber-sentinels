@@ -3,9 +3,10 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_API_KEY"] = "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"
-os.environ["GROQ_API_KEY"] = "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"
-
+LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
+os.environ["LANGCHAIN_API_KEY"] = "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"
+LANGCHAIN_PROJECT="pr-crushing-bibliography-7"
+os.environ["GROQ_API_KEY"] = "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"
 model1 = ChatGroq(model="llama3-8b-8192")
 
 def fact_check(text):
